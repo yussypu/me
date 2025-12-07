@@ -137,12 +137,14 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      position: relative;
     }
 
     .note-header {
       padding: 20px 32px;
       background: var(--note-header-bg);
       border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
 
     .note-header h2 {
@@ -161,7 +163,9 @@
       flex: 1;
       padding: 32px;
       overflow-y: auto;
+      overflow-x: hidden;
       line-height: 1.7;
+      min-height: 0;
     }
 
     .note-body::-webkit-scrollbar {
@@ -383,13 +387,15 @@
       color: var(--accent);
     }
 
-    /* Empty State */
+    /* Note Content */
     .note-content {
       display: none;
+      height: 100%;
+      flex-direction: column;
     }
 
     .note-content.active {
-      display: block;
+      display: flex;
     }
 
     /* Education block */
@@ -452,9 +458,188 @@
       width: 14px;
       height: 14px;
     }
+
+    /* Mobile hamburger button */
+    .mobile-menu-btn {
+      display: none;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 1000;
+      background: var(--sidebar-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .mobile-menu-btn span {
+      display: block;
+      width: 20px;
+      height: 2px;
+      background: var(--text-primary);
+      border-radius: 1px;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-menu-btn.active span:nth-child(1) {
+      transform: rotate(45deg) translate(4px, 4px);
+    }
+
+    .mobile-menu-btn.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .mobile-menu-btn.active span:nth-child(3) {
+      transform: rotate(-45deg) translate(4px, -4px);
+    }
+
+    /* Sidebar overlay for mobile */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 99;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar-overlay.active {
+      opacity: 1;
+    }
+
+    /* Mobile styles */
+    @media (max-width: 768px) {
+      body {
+        align-items: flex-start;
+        justify-content: flex-start;
+      }
+
+      .app-container {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+        flex-direction: column;
+      }
+
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        z-index: 100;
+        transition: left 0.3s ease;
+        border-right: 1px solid var(--border);
+      }
+
+      .sidebar.active {
+        left: 0;
+      }
+
+      .sidebar-overlay {
+        display: block;
+        pointer-events: none;
+      }
+
+      .sidebar-overlay.active {
+        pointer-events: auto;
+      }
+
+      .main-content {
+        width: 100%;
+        height: 100vh;
+      }
+
+      .note-header {
+        padding: 60px 20px 20px 20px;
+      }
+
+      .note-header h2 {
+        font-size: 24px;
+      }
+
+      .note-body {
+        padding: 20px;
+      }
+
+      .experience-header {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .experience-date {
+        text-align: left;
+      }
+
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .skills-grid {
+        gap: 6px;
+      }
+
+      .skill-tag {
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+
+      .project-card {
+        padding: 16px;
+      }
+
+      .education-block {
+        padding: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .note-header h2 {
+        font-size: 20px;
+      }
+
+      .note-section h3 {
+        font-size: 14px;
+      }
+
+      .note-section p,
+      .note-section li {
+        font-size: 13px;
+      }
+
+      .project-name,
+      .experience-title {
+        font-size: 14px;
+      }
+
+      .project-desc {
+        font-size: 12px;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Mobile menu button -->
+  <button class="mobile-menu-btn" id="mobileMenuBtn">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- Sidebar overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
   <div class="app-container">
     <!-- Sidebar -->
     <div class="sidebar">
@@ -514,12 +699,11 @@
             <h3>Who I Am</h3>
             <p>
               I'm a systems software engineer focused on <span class="highlight">low-level systems</span> and 
-              <span class="highlight">performance optimization</span>. I like building things that are fast, 
-              reliable, and close to the metal.
+              <span class="highlight">performance optimization</span>. I like building things that are fast and 
+              reliable.
             </p>
             <p>
-              Currently finishing my BSc in Computer Science at VU Amsterdam. When I'm not debugging kernel code 
-              or optimizing hot paths, I'm probably thinking about how to make something run faster.
+              Currently finishing my BSc in Computer Science at VU Amsterdam.
             </p>
           </div>
 
@@ -548,6 +732,16 @@
               <li>Understanding systems deeply — from the hardware up</li>
               <li>Building tools that just work, quietly and reliably</li>
               <li>Clean abstractions that don't leak</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="note-section">
+            <h3>What I'm Working On</h3>
+            <ul>
+              <li>Learning new skills everyday to help further grow my freelancing career</li>
+              <li>Getting to sub 10% body fat</li>
+              <li>Graduating :p</li>
             </ul>
           </div>
         </div>
@@ -705,9 +899,8 @@
           <div class="note-section">
             <h3>Systems Programming</h3>
             <div class="skills-grid">
-              <span class="skill-tag primary">C</span>
-              <span class="skill-tag primary">C++</span>
-              <span class="skill-tag primary">Rust</span>
+              <span class="skill-tag primary">Software Design</span>
+              <span class="skill-tag primary">Memory Management</span>
               <span class="skill-tag">POSIX</span>
               <span class="skill-tag">IPC</span>
               <span class="skill-tag">Kernel Development</span>
@@ -729,6 +922,9 @@
           <div class="note-section">
             <h3>Languages & Backend</h3>
             <div class="skills-grid">
+              <span class="skill-tag primary">C</span>
+              <span class="skill-tag primary">C++</span>
+              <span class="skill-tag primary">Rust</span>
               <span class="skill-tag primary">Go</span>
               <span class="skill-tag">Python</span>
               <span class="skill-tag">JavaScript</span>
@@ -796,6 +992,19 @@
   <script>
     const noteItems = document.querySelectorAll('.note-item');
     const noteContents = document.querySelectorAll('.note-content');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    // Toggle mobile menu
+    function toggleMobileMenu() {
+      mobileMenuBtn.classList.toggle('active');
+      sidebar.classList.toggle('active');
+      sidebarOverlay.classList.toggle('active');
+    }
+
+    mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+    sidebarOverlay.addEventListener('click', toggleMobileMenu);
 
     noteItems.forEach(item => {
       item.addEventListener('click', () => {
@@ -812,6 +1021,11 @@
             content.classList.add('active');
           }
         });
+
+        // Close mobile menu after selection
+        if (window.innerWidth <= 768) {
+          toggleMobileMenu();
+        }
       });
     });
   </script>
