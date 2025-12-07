@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yahya Ehsan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600&family=SF+Pro+Text:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --sidebar-bg: #1e1e1e;
+      --sidebar-hover: #2a2a2a;
+      --sidebar-active: #3a3a3a;
+      --note-bg: #1a1a1a;
+      --note-header-bg: #252525;
+      --text-primary: #ffffff;
+      --text-secondary: #999999;
+      --text-muted: #666666;
+      --accent: #ffc32b;
+      --accent-dim: #b8941f;
+      --border: #333333;
+      --folder-icon: #ffc32b;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+      background: #0d0d0d;
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .app-container {
+      display: flex;
+      width: 1200px;
+      height: 700px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 
+        0 50px 100px -20px rgba(0, 0, 0, 0.8),
+        0 30px 60px -30px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    .sidebar-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-header h1 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .folder-section {
+      padding: 12px 0;
+    }
+
+    .folder-header {
+      padding: 8px 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .note-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .note-item:hover {
+      background: var(--sidebar-hover);
+    }
+
+    .note-item.active {
+      background: var(--sidebar-active);
+      border-left-color: var(--accent);
+    }
+
+    .note-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .note-preview {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .note-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      background: var(--note-bg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .note-header {
+      padding: 20px 32px;
+      background: var(--note-header-bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .note-header h2 {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .note-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .note-body {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+      line-height: 1.7;
+    }
+
+    .note-body::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .note-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .note-body::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .note-section {
+      margin-bottom: 28px;
+    }
+
+    .note-section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .note-section h3::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .note-section p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .note-section ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .note-section li {
+      font-size: 14px;
+      color: var(--text-secondary);
+      padding: 6px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .note-section li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent-dim);
+    }
+
+    .highlight {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      background: rgba(255, 195, 43, 0.15);
+      color: var(--accent);
+      border-radius: 4px;
+      font-size: 12px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .experience-block {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .experience-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .experience-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .experience-company {
+      font-size: 13px;
+      color: var(--accent);
+      margin-top: 2px;
+    }
+
+    .experience-date {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .experience-location {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .project-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+    }
+
+    .project-card:hover {
+      border-color: var(--accent-dim);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .project-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .project-stack {
+      font-size: 12px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .project-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .project-stat {
+      display: inline-block;
+      background: rgba(255, 195, 43, 0.1);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--accent);
+      margin-top: 10px;
+      font-weight: 500;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .contact-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .contact-item:hover {
+      border-color: var(--accent);
+      background: rgba(255, 195, 43, 0.05);
+    }
+
+    .contact-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .contact-value {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    .skills-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .skill-tag {
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+
+    .skill-tag:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .skill-tag.primary {
+      background: rgba(255, 195, 43, 0.1);
+      border-color: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    /* Empty State */
+    .note-content {
+      display: none;
+    }
+
+    .note-content.active {
+      display: block;
+    }
+
+    /* Education block */
+    .education-block {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .education-school {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .education-degree {
+      font-size: 14px;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    .education-date {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .coursework {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .coursework-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    /* GitHub link */
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      margin-top: 8px;
+      transition: color 0.2s ease;
+    }
+
+    .github-link:hover {
+      color: var(--accent);
+    }
+
+    .github-link svg {
+      width: 14px;
+      height: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffc32b" stroke-width="2">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+        <h1>Yahya's Notes</h1>
+      </div>
+
+      <div class="folder-section">
+        <div class="folder-header">Portfolio</div>
+
+        <div class="note-item active" data-note="about">
+          <div class="note-title">About Me</div>
+          <div class="note-preview">Systems engineer, VU Amsterdam...</div>
+          <div class="note-date">Last edited today</div>
+        </div>
+
+        <div class="note-item" data-note="experience">
+          <div class="note-title">Experience</div>
+          <div class="note-preview">Orbit Consulting, Coffee International...</div>
+          <div class="note-date">Dec 2024</div>
+        </div>
+
+        <div class="note-item" data-note="projects">
+          <div class="note-title">Projects</div>
+          <div class="note-preview">OS Kernel, Redis Clone, HTTP Server...</div>
+          <div class="note-date">Dec 2024</div>
+        </div>
+
+        <div class="note-item" data-note="skills">
+          <div class="note-title">Skills</div>
+          <div class="note-preview">C, C++, Rust, Go, Systems...</div>
+          <div class="note-date">Nov 2024</div>
+        </div>
+
+        <div class="note-item" data-note="contact">
+          <div class="note-title">Contact</div>
+          <div class="note-preview">Get in touch...</div>
+          <div class="note-date">Nov 2024</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- About Note -->
+      <div class="note-content active" id="note-about">
+        <div class="note-header">
+          <h2>About Me</h2>
+          <div class="note-meta">Last edited today at 2:34 PM</div>
+        </div>
+        <div class="note-body">
+          <div class="note-section">
+            <h3>Who I Am</h3>
+            <p>
+              I'm a systems software engineer focused on <span class="highlight">low-level systems</span> and 
+              <span class="highlight">performance optimization</span>. I like building things that are fast, 
+              reliable, and close to the metal.
+            </p>
+            <p>
+              Currently finishing my BSc in Computer Science at VU Amsterdam. When I'm not debugging kernel code 
+              or optimizing hot paths, I'm probably thinking about how to make something run faster.
+            </p>
+          </div>
+
+          <div class="note-section">
+            <h3>Education</h3>
+            <div class="education-block">
+              <div class="education-school">Vrije Universiteit Amsterdam</div>
+              <div class="education-degree">BSc Computer Science</div>
+              <div class="education-date">Expected June 2026 · Amsterdam, NL</div>
+              <div class="coursework">
+                <div class="coursework-label">Relevant Coursework</div>
+                <div class="skills-grid">
+                  <span class="skill-tag">Operating Systems</span>
+                  <span class="skill-tag">Systems Programming</span>
+                  <span class="skill-tag">Concurrent Computing</span>
+                  <span class="skill-tag">Advanced Data Structures</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="note-section">
+            <h3>What I Care About</h3>
+            <ul>
+              <li>Writing code that's fast because it's designed right, not optimized after</li>
+              <li>Understanding systems deeply — from the hardware up</li>
+              <li>Building tools that just work, quietly and reliably</li>
+              <li>Clean abstractions that don't leak</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Experience Note -->
+      <div class="note-content" id="note-experience">
+        <div class="note-header">
+          <h2>Experience</h2>
+          <div class="note-meta">Updated December 2024</div>
+        </div>
+        <div class="note-body">
+          <div class="note-section">
+            <h3>Work History</h3>
+
+            <div class="experience-block">
+              <div class="experience-header">
+                <div>
+                  <div class="experience-title">Junior Backend Engineer</div>
+                  <div class="experience-company">Orbit Consulting (SMC-Pvt) Ltd</div>
+                </div>
+                <div>
+                  <div class="experience-date">Mar 2024 – Sep 2025</div>
+                  <div class="experience-location">Remote</div>
+                </div>
+              </div>
+              <ul>
+                <li>Led design and maintenance of RESTful APIs for enterprise clients, ensuring secure and highly available systems</li>
+                <li>Integrated PostgreSQL and Redis caching, <span class="highlight">reducing average API latency by 40%</span></li>
+                <li>Automated CI/CD pipelines using Docker and GitLab CI, streamlining test and release workflows</li>
+              </ul>
+            </div>
+
+            <div class="experience-block">
+              <div class="experience-header">
+                <div>
+                  <div class="experience-title">Front-End Performance Intern</div>
+                  <div class="experience-company">Coffee International</div>
+                </div>
+                <div>
+                  <div class="experience-date">Apr 2023 – Sep 2023</div>
+                  <div class="experience-location">Remote</div>
+                </div>
+              </div>
+              <ul>
+                <li>Refactored JS rendering engine to minimize DOM operations, <span class="highlight">cutting mobile render time by 25%</span></li>
+                <li>Collaborated in 4-person team to profile and resolve critical performance bottlenecks in user flows</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projects Note -->
+      <div class="note-content" id="note-projects">
+        <div class="note-header">
+          <h2>Projects</h2>
+          <div class="note-meta">The stuff I build for fun (and learning)</div>
+        </div>
+        <div class="note-body">
+          <div class="note-section">
+            <h3>Systems Engineering</h3>
+
+            <div class="project-card">
+              <div class="project-name">Custom Operating System Kernel</div>
+              <div class="project-stack">C · Memory Management · FAT Filesystem</div>
+              <div class="project-desc">
+                Bare-metal OS kernel with paging, process scheduling, interrupts, and FAT-style filesystem. 
+                Implemented virtual memory manager and synchronization primitives from scratch.
+              </div>
+              <a href="https://github.com/yussypu/c-os" target="_blank" class="github-link">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                View on GitHub
+              </a>
+            </div>
+
+            <div class="project-card">
+              <div class="project-name">High-Performance Redis Clone</div>
+              <div class="project-stack">Go · Concurrency · TCP Sockets</div>
+              <div class="project-desc">
+                Thread-safe in-memory key-value store with RESP-like protocol. 
+                Strong focus on concurrency design, cache optimization, and performance profiling.
+              </div>
+              <div class="project-stat">75M+ GET ops/sec on Apple M1</div>
+              <a href="https://github.com/yussypu/redis-clone-go" target="_blank" class="github-link">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                View on GitHub
+              </a>
+            </div>
+
+            <div class="project-card">
+              <div class="project-name">Low-Level HTTP Server</div>
+              <div class="project-stack">C++ · BSD Sockets · epoll</div>
+              <div class="project-desc">
+                Multithreaded HTTP/1.1 server handling 10K+ concurrent connections. 
+                Implemented persistent connections and zero-copy I/O for maximum throughput.
+              </div>
+              <div class="project-stat">93K req/s throughput</div>
+              <a href="https://github.com/yussypu" target="_blank" class="github-link">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                View on GitHub
+              </a>
+            </div>
+
+            <div class="project-card">
+              <div class="project-name">Rust File Synchronization System</div>
+              <div class="project-stack">Rust · Async/Await · AES Encryption</div>
+              <div class="project-desc">
+                Real-time file sync system with AES encryption for 5K+ files. 
+                Built on Rust's async/await model with low-latency I/O optimization.
+              </div>
+              <div class="project-stat">123μs avg sync time per file</div>
+              <a href="https://github.com/yussypu/rust-file-sync" target="_blank" class="github-link">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                View on GitHub
+              </a>
+            </div>
+          </div>
+
+          <div class="note-section">
+            <h3>Other Work</h3>
+
+            <div class="project-card">
+              <div class="project-name">CS Hub Platform</div>
+              <div class="project-stack">Django · PostgreSQL</div>
+              <div class="project-desc">
+                Academic resource platform serving 100+ VU students. 
+                Optimized for high query loads during exam periods.
+              </div>
+            </div>
+
+            <div class="project-card">
+              <div class="project-name">CAPTCHA Breaker ML System</div>
+              <div class="project-stack">Python · TensorFlow · CNN</div>
+              <div class="project-desc">
+                Custom CNN architecture achieving 87% accuracy on text-based CAPTCHAs.
+                Built preprocessing pipeline for distorted image handling.
+              </div>
+              <a href="https://github.com/yussypu/captcha-breaker" target="_blank" class="github-link">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                View on GitHub
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skills Note -->
+      <div class="note-content" id="note-skills">
+        <div class="note-header">
+          <h2>Skills</h2>
+          <div class="note-meta">What I work with</div>
+        </div>
+        <div class="note-body">
+          <div class="note-section">
+            <h3>Systems Programming</h3>
+            <div class="skills-grid">
+              <span class="skill-tag primary">C</span>
+              <span class="skill-tag primary">C++</span>
+              <span class="skill-tag primary">Rust</span>
+              <span class="skill-tag">POSIX</span>
+              <span class="skill-tag">IPC</span>
+              <span class="skill-tag">Kernel Development</span>
+              <span class="skill-tag">Assembly</span>
+            </div>
+          </div>
+
+          <div class="note-section">
+            <h3>Performance Engineering</h3>
+            <div class="skills-grid">
+              <span class="skill-tag primary">Concurrency</span>
+              <span class="skill-tag primary">Multithreading</span>
+              <span class="skill-tag">Lock-free Algorithms</span>
+              <span class="skill-tag">Cache Optimization</span>
+              <span class="skill-tag">Profiling</span>
+            </div>
+          </div>
+
+          <div class="note-section">
+            <h3>Languages & Backend</h3>
+            <div class="skills-grid">
+              <span class="skill-tag primary">Go</span>
+              <span class="skill-tag">Python</span>
+              <span class="skill-tag">JavaScript</span>
+              <span class="skill-tag">PostgreSQL</span>
+              <span class="skill-tag">Redis</span>
+              <span class="skill-tag">Django</span>
+            </div>
+          </div>
+
+          <div class="note-section">
+            <h3>Tools & Infrastructure</h3>
+            <div class="skills-grid">
+              <span class="skill-tag">Git</span>
+              <span class="skill-tag">GDB</span>
+              <span class="skill-tag">Valgrind</span>
+              <span class="skill-tag">Docker</span>
+              <span class="skill-tag">GitLab CI</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Note -->
+      <div class="note-content" id="note-contact">
+        <div class="note-header">
+          <h2>Contact</h2>
+          <div class="note-meta">Let's talk</div>
+        </div>
+        <div class="note-body">
+          <div class="note-section">
+            <h3>Get In Touch</h3>
+            <p>
+              I'm open to opportunities in systems engineering, backend development, 
+              and performance-critical applications. If you're working on something 
+              interesting at a low level, I'd love to hear about it.
+            </p>
+          </div>
+
+          <div class="note-section">
+            <h3>Links</h3>
+            <div class="contact-grid">
+              <a href="mailto:yahyaehsan137@gmail.com" class="contact-item">
+                <div class="contact-label">Email</div>
+                <div class="contact-value">yahyaehsan137@gmail.com</div>
+              </a>
+              <a href="https://github.com/yussypu" target="_blank" class="contact-item">
+                <div class="contact-label">GitHub</div>
+                <div class="contact-value">github.com/yussypu</div>
+              </a>
+              <a href="https://www.linkedin.com/in/yahya-ehsan-76bb25213/" target="_blank" class="contact-item">
+                <div class="contact-label">LinkedIn</div>
+                <div class="contact-value">Yahya Ehsan</div>
+              </a>
+              <a href="https://yahyaehsan.com" target="_blank" class="contact-item">
+                <div class="contact-label">Website</div>
+                <div class="contact-value">yahyaehsan.com</div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const noteItems = document.querySelectorAll('.note-item');
+    const noteContents = document.querySelectorAll('.note-content');
+
+    noteItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const noteId = item.dataset.note;
+
+        // Update active states
+        noteItems.forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
+
+        // Show corresponding content
+        noteContents.forEach(content => {
+          content.classList.remove('active');
+          if (content.id === `note-${noteId}`) {
+            content.classList.add('active');
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
