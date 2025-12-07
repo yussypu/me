@@ -60,6 +60,7 @@
       display: flex;
       flex-direction: column;
       user-select: none;
+      flex-shrink: 0;
     }
 
     .sidebar-header {
@@ -138,6 +139,7 @@
       flex-direction: column;
       overflow: hidden;
       position: relative;
+      min-width: 0;
     }
 
     .note-header {
@@ -734,9 +736,8 @@
               <li>Clean abstractions that don't leak</li>
             </ul>
           </div>
-        </div>
 
-        <div class="note-section">
+          <div class="note-section">
             <h3>What I'm Working On</h3>
             <ul>
               <li>Learning new skills everyday to help further grow my freelancing career</li>
